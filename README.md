@@ -3,22 +3,11 @@ Suppose you live in Ribeirão Preto. Should you take an umbrella?
 
 You tell us!
 
-Based on weather api https://openweathermap.org/api you should make a request on this api and return the Ribeirão Preto weather forecast for the week, based on:
+If the air humidity on a given day is **greater** than **70%**, it is a good idea to take an umbrella with you.
+Your goal is to fetch the Ribeirão Preto air humidity forecast for the next **seven** days from https://openweathermap.org/api and display the following message template:
 
-- Humidity
-- Wind
-- Temperature
-- Cloudiness
-- Pressure
+*You should take an umbrella in these days: ....*
 
-```
-Humidity probability:
-- 0% No chance of rain
-- ~10% slight chance of isolated rains
-- ~20% a small chance of rain
-- 30-50% considerable chance of scattered rain
-- 60-70% scattered rain
-- 80-100% rainy (strong or weak)
-```
+For instance, if on the next seven days air humidity will be greater than 70% on Monday, Tuesday and Wednesday, you must display the message:
 
-If air humidity is greater than **70%**, display the message: **You should take an umbrella in these days: ...**
+*You should take an umbrella in these days: Monday, Tuesday and Wednesday.*
