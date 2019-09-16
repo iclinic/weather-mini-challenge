@@ -8,6 +8,6 @@ Your goal is to fetch the Ribeirão Preto air humidity forecast for the next **f
 
 *You should take an umbrella in these days: ....*
 
-For instance, if on the next seven days air humidity will be greater than 70% on Monday, Tuesday and Wednesday, you must display the message:
+For instance, if on the next five days air humidity will be greater than 70% on Monday, Tuesday and Wednesday, you must display the message:
 
 *You should take an umbrella in these days: Monday, Tuesday and Wednesday.*
