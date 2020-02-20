@@ -6,6 +6,9 @@
     "start": "node ./bin/www",
     "test": "jest"
   },
+  "engines": {
+    "node": "12.x"
+  },
   "dependencies": {
     "axios": "^0.19.2",
     "cookie-parser": "~1.4.4",
