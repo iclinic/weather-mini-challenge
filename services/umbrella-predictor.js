@@ -69,7 +69,7 @@ class UmbrellaPredictor {
 
     // Get the day names from the forecasts dates.
     const rainyDays = data.map(item => {
-      const dt = new Date(item.dt)
+      const dt = new Date(item.dt * 1000)
       return Utils.getDayName(dt.getDay());
     })
 
