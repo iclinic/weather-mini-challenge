@@ -18,7 +18,6 @@ This module contains a set of functions for forecast weather data
 operations and methods.
 """
 import os
-import urllib.parse
 
 from .req import IClinicHTTPClient
 
@@ -28,14 +27,10 @@ __all__ = ['Forecast']
 class Forecast:
     """."""
     __base_path = "/forecast"
-    __params = {
-        "q": "Ribeirão Preto",
-        "appid": os.environ.get("APIKEY")
-    }
 
     def __init__(self):
         """."""
-        self.__cli = IClinicHTTPClient()
+        self.__cli = IClinicHTTPClient(api_key=os.environ.get("APIKEY"))
 
     def __mount_path(self, path):
         """."""
@@ -51,10 +46,11 @@ class Forecast:
     def days5(self, city_name):
         """."""
         data = None
-        params = urllib.parse.urlencode(self.__params)
         path = self.__mount_path("")
+        # add paramers to cli
+        self.__cli.add_param("q", city_name)
 
-        if self.__cli.http_get(path, params).is_ok():
+        if self.__cli.http_get(path).is_ok():
             data = self.__cli.to_json()
         if data and 'list' in data.keys() and len(data) > 0:
             data = [forecast for forecast in data['list']]
