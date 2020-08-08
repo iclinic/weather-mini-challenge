@@ -19,6 +19,7 @@ and methods.
 """
 import json
 import http.client
+import urllib.parse
 
 from .version import version as __version__
 
@@ -26,32 +27,31 @@ __all__ = ['IClinicHTTPClient']
 
 # Default Api Version
 DF_APIVERSI = "2.5"
-# Default iClinic User-Agent
+# Default iClinic User-Agent "iclinic/0.0.1"
 DF_USERAGENT = "iclinic/%s"
-# Default http client timeout 15 seconds
-DF_TIMEOUT = 15
-# Api Base url
-DF_CONTTYPE_JSON = "application/json"
+# Default ContentType
+DF_CONTTYPE = "application/json"
 
 
 class IClinicHTTPClient(http.client.HTTPSConnection):
     """."""
 
-    __timeout = DF_TIMEOUT
     __host = "api.openweathermap.org"
     __is_ssl = True
     __headers = {
         "User-Agent": DF_USERAGENT % (__version__),
-        "Accept": DF_CONTTYPE_JSON
+        "Accept": DF_CONTTYPE
     }
     __base_path = "/data/%s%s?"  # /data/<api_version><service>
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, api_key, api_ver=DF_APIVERSI, *args, **kwargs):
         super().__init__(host=self.__host, *args, **kwargs)
         self.__resp = None  # Response object
         self.__body = None  # Body str
-        self.__agent = None  # User-Agent
         self.__params = {}
+        self.__api_key = api_key
+        self.api_ver = DF_APIVERSI if api_ver is None else api_ver
+        self.add_param("appid", api_key)
 
     @property
     def agent(self):
@@ -65,11 +65,27 @@ class IClinicHTTPClient(http.client.HTTPSConnection):
         self.__agent = value
         return True
 
-        def add_param(self, name, value, replace=True):
-            pass
+    def add_param(self, name, value, replace=True):
+        if len(name) == 0:
+            raise ValueError("no name")
+        if name in self.__params.keys():
+            if replace:
+                self.__params[name] = value
+                return True
+            return False
+        self.__params[name] = value
+        return True
 
-        def del_param(self, name):
-            pass
+    def del_param(self, name):
+        if len(name) == 0:
+            raise ValueError("no name")
+        self.__params.pop(name, None)
+        return True
+
+    def get_param(self, name):
+        if len(name) == 0:
+            raise ValueError("no name")
+        return self.__params.get(name, None)
 
     @property
     def status_code(self):
@@ -90,18 +106,16 @@ class IClinicHTTPClient(http.client.HTTPSConnection):
                 raise ValueError(e)
         return None
 
-    def http_get(self, path, params=None):
+    def http_get(self, path):
         """."""
         if len(path) == 0:
             raise ValueError("length path")
         # TODO: mount path
         path = self.__base_path % (DF_APIVERSI, path)
-        # print(path)
-        # print(params)
+        params = urllib.parse.urlencode(self.__params)
         self.request("GET", path+params, None, self.__headers)
         self.__resp = self.getresponse()
         self.__body = self.__resp.read()
-        # print(self.__body)
         return self
 
     def is_ok(self):
