@@ -35,10 +35,11 @@ USERAGENT = "iclinic"
 CONTTYPE = "application/json"
 # Host
 HOST = "api.openweathermap.org"
-# ApiKe
+# ApiKey
 APIKEY = os.environ.get("APIKEY", None)
 log = logging.getLogger("iclinic-weather")
 
+# parser command line arguments
 parser = argparse.ArgumentParser(description='IClini Weather Challenge.')
 parser.add_argument('-c', '--city', help='city name eg: Ribeirão Preto',
                     default="Ribeirão Preto")
@@ -49,14 +50,43 @@ parser.add_argument("-v", "--verbose", dest="verbose_count",
                     help="increases log verbosity for each occurence.")
 
 
-def req(api_method, params=None, timeout=10):
-    """Request function."""
+def req(api_method, params, timeout=10):
+    """
+    Request function.
+
+    Parameters
+    ----------
+    api_method : str
+        The city name
+    params: dict
+        The request timeout
+    timeout : float, optional
+        The request timeout
+
+    Returns
+    -------
+    resp: request
+
+    Examples
+    --------
+    >>> params = {'q': 'Ribeirão Preto', 'appid': 'API KEY'}
+    >>> req("forecast", params=params, timeout=15)
+
+    """
+    if len(api_method) == 0:
+        raise ValueError("required api method name")
+    if timeout <= 0:
+        raise ValueError("timeout needs to be positive")
+    if bool(params) is False:
+        raise ValueError("empty params")
+
     headers = {
         "User-Agent": USERAGENT,
         "Accept": CONTTYPE
     }
     # /data/<api_version><method>?
     base_path = "/data/{ver}/{met}?"
+    # Eg path: /data/2.5/forecast?q=...
     path = "{}{}".format(
         base_path.format(ver=APIVERSI, met=api_method),
         urllib.parse.urlencode(params)
@@ -65,39 +95,69 @@ def req(api_method, params=None, timeout=10):
     conn = http.client.HTTPSConnection(HOST, timeout=timeout)
     conn.request("GET", path, None, headers)
     resp = conn.getresponse()
+
     if resp.status > 300:
-        log.error("status code error: %d %s" % (resp.status, resp.read()))
+        log.warning("status code error: %d %s" % (resp.status, resp.read()))
         resp = None
+
     return resp
 
 
 def ut2weekday(unixtimestamp):
-    """."""
+    """
+    Return weekday name based on unix time.
+
+    Parameters
+    ----------
+    unixtimestamp: int
+        Unix timestamp
+
+    Returns
+    -------
+    resp: string
+    """
     if unixtimestamp > 0:
         return datetime.datetime.fromtimestamp(unixtimestamp).strftime("%A")
     raise ValueError("invalid unixtimestamp: %d" % (unixtimestamp))
 
 
 def forecast(city_name, timeout=10):
-    """Forecast.
-
-    Paramets
-    ========
-    city_name:
-    timeout:
     """
+    Forecast.
+
+    Parameters
+    ----------
+    city_name : str
+        The city name
+    timeout : float, optional
+        The request timeout
+
+    Returns
+    -------
+    resp: request
+
+    Examples
+    --------
+    >>> forecast("Ribeirão Preto", timeout=15)
+    """
+    if len(city_name) == 0:
+        raise ValueError("required city name")
+
     params = {
         "q": city_name,
         "appid": APIKEY,
     }
+
     log.info("Forecast: %s" % city_name)
     return req("forecast", params, timeout=timeout)
 
 
-def umbrella(city_name, limit=40):
+def umbrella(city_name, limit):
     days = []
     msg_tpl = "You should take an umbrella in these days: %s"
     fore = forecast(city_name)
+    if limit > 0:
+        raise ValueError("limit greathe")
 
     for fcast in json.loads(fore.read())['list']:
         day = ut2weekday(fcast['dt'])
@@ -129,13 +189,16 @@ def main():
     """."""
     logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
                         format='%(name)s (%(levelname)s): %(message)s')
+
     if APIKEY is None:
-        print("not found apikey")
-        sys.exit(1)
+        ValueError("not found apikey, please checking with setenv APIKEY")
+
     try:
         args = parser.parse_args()
         log.setLevel(max(3 - args.verbose_count, 0) * 10)
         umbrella(args.city, args.limit)
+    except ValueError as e:
+        log.exception(e)
     except KeyboardInterrupt:
         log.error('bye!')
     finally:
