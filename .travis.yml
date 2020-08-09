@@ -1,0 +1,15 @@
+language: python
+python:
+  - 3.5
+  - 3.6
+  - 3.7
+  - 3.8
+before_install:
+  - python --version
+  # - pip install codecov
+#install:
+#  - pip install ".[test]" . # install package + test dependencies
+script:
+  - make test
+#after_success:
+#  - codecov # submit coverage
