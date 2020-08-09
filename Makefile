@@ -2,19 +2,15 @@ PYPATH?=	PYTHONPATH=.
 PYBIN?=		python3
 LINTBIN?=	flake8
 
-PY_FILES=	cli/iclinic-wea \
-		weather/exc.py \
-		weather/forecast.py \
-		weather/misc.py \
-		weather/req.py \
-		weather/rule.py \
-		weather/version.py
-BIN=		cli/iclinic-wea
+PY_FILES=	iclinic_wea.py
 
-.PHONY: lint run
+.PHONY: lint run test
 
 lint:
 	@${LINTBIN} ${PY_FILES}
 
 run:
-	@${PYPATH} ${PYBIN} ${BIN}
+	@${PYPATH} ${PYBIN} ${PY_FILES}
+
+test:
+	@${PYPATH} ${PYBIN} -m unittest
