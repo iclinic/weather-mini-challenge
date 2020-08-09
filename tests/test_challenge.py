@@ -6,7 +6,7 @@ class IClinigChallenge(unittest.TestCase):
     city_name = 'Ribeirão Preto'
 
     def test_ut2weekday_ok(self):
-        self.assertEqual(ut2weekday(1596933260), "Saturday")
+        self.assertEqual(ut2weekday(1596286800), "Saturday")
 
     def test_ut2weekday_negative_time(self):
         with self.assertRaises(ValueError):
