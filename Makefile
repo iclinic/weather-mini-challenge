@@ -12,5 +12,8 @@ lint:
 run:
 	@${PYPATH} ${PYBIN} ${PY_FILES}
 
+coverage:
+	@${PYTPATH} coverage run -m unittest discover
+
 test:
 	@${PYPATH} ${PYBIN} -m unittest

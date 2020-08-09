@@ -6,10 +6,12 @@ python:
   - 3.8
 before_install:
   - python --version
-  # - pip install codecov
+  - pip install -U pip
+  - pip install codecov
 #install:
 #  - pip install ".[test]" . # install package + test dependencies
 script:
   - make test
-#after_success:
-#  - codecov # submit coverage
+  - make coverage
+after_success:
+  - codecov
