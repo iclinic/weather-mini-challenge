@@ -39,7 +39,7 @@ In that case you can use the -h option to return help on how to use the script.
 $ iclinic_wea.py --help
 usage: iclinic_wea.py [-h] [-l LIMIT] [-t TIMEOUT] [-v] api_key city
 
-IClini Weather Challenge.
+IClinic Weather Challenge.
 
 positional arguments:
   api_key               api key: https://home.openweathermap.org/api_keys

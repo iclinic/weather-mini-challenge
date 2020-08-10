@@ -299,7 +299,7 @@ def main():
 
 
 # parser command line arguments
-parser = argparse.ArgumentParser(description='IClini Weather Challenge.')
+parser = argparse.ArgumentParser(description='IClinic Weather Challenge.')
 parser.add_argument('api_key',
                     help='api key: https://home.openweathermap.org/api_keys')
 parser.add_argument('city', help='city name eg: "Ribeirão Preto"',
