@@ -7,11 +7,13 @@ python:
 before_install:
   - python --version
   - pip install -U pip
+  - pip install flake8
   - pip install codecov
 #install:
 #  - pip install ".[test]" . # install package + test dependencies
 script:
   - make test
+  - make lint
   - make coverage
 after_success:
   - codecov
