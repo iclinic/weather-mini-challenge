@@ -90,6 +90,14 @@ You should take an umbrella in these days: Tuesday and Wednesday.
 
 ## Docs
 
+```
+$ cd docs/
+$ make html
+$ python3 -m http.server --directory __build/html
+Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/)
+
+```
+
 ## Tests
 
 ```sh
