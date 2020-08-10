@@ -37,17 +37,39 @@ CONTTYPE = "application/json"
 HOST = "api.openweathermap.org"
 # ApiKey
 APIKEY = os.environ.get("APIKEY", None)
+APIERROS = []
 log = logging.getLogger("iclinic-weather")
 
-# parser command line arguments
-parser = argparse.ArgumentParser(description='IClini Weather Challenge.')
-parser.add_argument('-c', '--city', help='city name eg: Ribeirão Preto',
-                    default="Ribeirão Preto")
-parser.add_argument('-l', '--limit', type=float, help='limit humidity eg: 70',
-                    default=70.0)
-parser.add_argument("-v", "--verbose", dest="verbose_count",
-                    action="count", default=0,
-                    help="increases log verbosity for each occurence.")
+def val_fpos(value):
+    """
+    Validate if float is positive.
+    """
+    nval = float(value)
+    msg = "%s is not a positive value"
+
+    if nval <= 0:
+        raise argparse.ArgumentTypeError(msg % value)
+
+    return nval
+
+def val_empty(value):
+    """
+    Validate if value is empty.
+    """
+    msg = "is empty value"
+
+    if len(value) == 0:
+        raise argparse.ArgumentTypeError(msg)
+
+    return value
+
+
+def handler_err(resp):
+    """."""
+    if resp.status > 300:
+        log.error("status code error: %d %s" % (resp.status, resp.read()))
+        resp = None
+    return resp
 
 
 def req(api_method, params, timeout=10):
@@ -84,7 +106,6 @@ def req(api_method, params, timeout=10):
         "User-Agent": USERAGENT,
         "Accept": CONTTYPE
     }
-    # /data/<api_version><method>?
     base_path = "/data/{ver}/{met}?"
     # Eg path: /data/2.5/forecast?q=...
     path = "{}{}".format(
@@ -92,13 +113,13 @@ def req(api_method, params, timeout=10):
         urllib.parse.urlencode(params)
     )
     log.debug("Request GET /%s" % api_method)
+
     conn = http.client.HTTPSConnection(HOST, timeout=timeout)
     conn.request("GET", path, None, headers)
     resp = conn.getresponse()
+    # handler error
+    handler_err(resp)
 
-    if resp.status > 300:
-        log.warning("status code error: %d %s" % (resp.status, resp.read()))
-        resp = None
 
     return resp
 
@@ -121,7 +142,7 @@ def ut2weekday(unixtimestamp):
     raise ValueError("invalid unixtimestamp: %d" % (unixtimestamp))
 
 
-def forecast(city_name, timeout=10):
+def forecast(api_key, city_name):
     """
     Forecast.
 
@@ -129,8 +150,8 @@ def forecast(city_name, timeout=10):
     ----------
     city_name : str
         The city name
-    timeout : float, optional
-        The request timeout
+    timeout : str
+        The api key
 
     Returns
     -------
@@ -140,30 +161,27 @@ def forecast(city_name, timeout=10):
     --------
     >>> forecast("Ribeirão Preto", timeout=15)
     """
-    if len(city_name) == 0:
-        raise ValueError("required city name")
-
     params = {
         "q": city_name,
-        "appid": APIKEY,
+        "appid": api_key,
     }
 
     log.info("Forecast: %s" % city_name)
-    return req("forecast", params, timeout=timeout)
+    return req("forecast", params)
 
 
-def umbrella(city_name, limit):
+def umbrella(args):
     days = []
     msg_tpl = "You should take an umbrella in these days: %s"
-    fore = forecast(city_name)
-    if limit > 0:
+    fore = forecast(args.api_key, args.city)
+    if args.limit <= 0:
         raise ValueError("limit greathe")
 
     for fcast in json.loads(fore.read())['list']:
         day = ut2weekday(fcast['dt'])
         if 'main' in fcast.keys():
             hum = fcast['main']['humidity']
-            if hum > limit and day not in days:
+            if hum > args.limit and day not in days:
                 days.append(day)
         else:
             print("Not found key: `main` in %s" % str(fcast))
@@ -190,13 +208,10 @@ def main():
     logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
                         format='%(name)s (%(levelname)s): %(message)s')
 
-    if APIKEY is None:
-        ValueError("not found apikey, please checking with setenv APIKEY")
-
     try:
         args = parser.parse_args()
         log.setLevel(max(3 - args.verbose_count, 0) * 10)
-        umbrella(args.city, args.limit)
+        umbrella(args)
     except ValueError as e:
         log.exception(e)
     except KeyboardInterrupt:
@@ -204,6 +219,19 @@ def main():
     finally:
         logging.shutdown()
 
+
+# parser command line arguments
+parser = argparse.ArgumentParser(description='IClini Weather Challenge.')
+parser.add_argument('api_key',
+                    help='api key: https://home.openweathermap.org/api_keys')
+parser.add_argument('city', help='city name eg: "Ribeirão Preto"',
+                    type=val_empty)
+parser.add_argument('-l', '--limit', type=val_fpos,
+                    help='limit humidity eg: 70',
+                    default=70.0)
+parser.add_argument("-v", "--verbose", dest="verbose_count",
+                    action="count", default=0,
+                    help="increases log verbosity for each occurence.")
 
 if __name__ == '__main__':
     main()
