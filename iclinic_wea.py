@@ -49,6 +49,22 @@ log = logging.getLogger("iclinic-weather")
 def val_fpos(value):
     """
     Validate if float is positive.
+
+    Parameters
+    ----------
+    value: str
+        Command line value
+
+    Returns
+    -------
+    value: float
+
+    Examples
+    --------
+    >>> nvalue = val_fpos(15)
+    >>> print("Value is: %.2f" % nvalue)
+    Value is 15.00
+
     """
     nval = float(value)
     msg = "%s is not a positive value"
@@ -62,6 +78,21 @@ def val_fpos(value):
 def val_empty(value):
     """
     Validate if value is empty.
+
+    Parameters
+    ----------
+    value: str
+        Command line value
+
+    Returns
+    -------
+    value: str
+
+    Examples
+    --------
+    >>> nvalue = val_fpos("hi")
+    >>> print("Value is: %s" % nvalue)
+    Value is hi
     """
     msg = "is empty value"
 
@@ -72,7 +103,19 @@ def val_empty(value):
 
 
 def handler_err(resp):
-    """."""
+    """
+    Handler request error.
+
+    Parameters
+    ----------
+    resp: http.client.HTTPResponse
+        Response of request
+
+    Returns
+    -------
+    value: byte
+
+    """
     if not isinstance(resp, http.client.HTTPResponse):
         raise ValueError("response is not instance of HTTPResponse")
 
@@ -116,12 +159,12 @@ def req(service, params, timeout=10):
     --------
     >>> params = {'q': 'Ribeirão Preto', 'appid': 'API KEY'}
     >>> resp = req("forecast", params=params, timeout=15)
-
     """
     resp = {}
     if len(service) == 0:
         raise ValueError("required api method name")
-
+    if bool(params) is False:
+            raise ValueError("empty params")
     headers = {
         "User-Agent": USERAGENT,
         "Accept": CONTTYPE
