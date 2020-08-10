@@ -38,6 +38,8 @@ HOST = "api.openweathermap.org"
 # ApiKey and possible erros
 APIKEY = os.environ.get("APIKEY", None)
 APIERROS = [401, 404, 429]
+# Template message
+MSG_TPL = "You should take an umbrella in these days: %s"
 
 log = logging.getLogger("iclinic-weather")
 
@@ -129,7 +131,9 @@ def req(api_method, params, timeout=10):
 
     conn = http.client.HTTPSConnection(HOST, timeout=timeout)
     conn.request("GET", path, None, headers)
+    # checking possible errors
     data = handler_err(conn.getresponse())
+    # parse resposne
     resp = json.loads(data)
 
     return resp
@@ -168,13 +172,13 @@ def umbrella(args):
 
     Examples
     --------
-    >>> _args = {'city': 'Ribeirão Preto', 'appid': 'API KEY'}
+    >>> _args = {'city': 'Ribeirão Preto', 'appid': 'API KEY', 'limit': 70,
+                 'timeout': 10}
     >>> umbrella(_args)
     You should take an umbrella in these days: Tuesday and Wednesday.
     """
     days = []
     method = "forecast"
-    msg_tpl = "You should take an umbrella in these days: %s"
     # Api parameters
     params = {
         "q": args.city,
@@ -205,7 +209,7 @@ def umbrella(args):
                 weekdays += day
                 weekdays += ", "
         weekdays += "."
-        print(msg_tpl % weekdays)
+        print(MSG_TPL % weekdays)
     else:
         log.info("you won't need an umbrella")
 
