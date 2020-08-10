@@ -2,7 +2,6 @@ import argparse
 import unittest
 
 from iclinic_wea import (
-    forecast,
     req,
     ut2weekday,
     val_fpos,

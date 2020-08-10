@@ -35,9 +35,10 @@ USERAGENT = "iclinic"
 CONTTYPE = "application/json"
 # Host
 HOST = "api.openweathermap.org"
-# ApiKey
+# ApiKey and possible erros
 APIKEY = os.environ.get("APIKEY", None)
-APIERROS = []
+APIERROS = [401, 404, 429]
+
 log = logging.getLogger("iclinic-weather")
 
 def val_fpos(value):
@@ -66,10 +67,26 @@ def val_empty(value):
 
 def handler_err(resp):
     """."""
-    if resp.status > 300:
-        log.error("status code error: %d %s" % (resp.status, resp.read()))
-        resp = None
-    return resp
+    if not isinstance(resp, http.client.HTTPResponse):
+        raise ValueError("response is not instance of HTTPResponse")
+
+    data = resp.read()
+
+    if resp.status > 300 and resp.status in APIERROS:
+        try:
+            resp_json = json.loads(data)
+            if 'message' in resp_json.keys():
+                msg = resp_json['message']
+            else:
+                msg = data
+            raise ValueError(msg)
+        except json.JSONDecodeError:
+            log.exception("status code: %d msg: %s" %
+                         (resp.status, data))
+            raise ValueError("status code: %d msg: %s" %
+                            (resp.status, data))
+    log.debug("code: [%d] - resp: %s", resp.status, data)
+    return data
 
 
 def req(api_method, params, timeout=10):
@@ -81,26 +98,22 @@ def req(api_method, params, timeout=10):
     api_method : str
         The city name
     params: dict
-        The request timeout
+        The params of api
     timeout : float, optional
         The request timeout
 
     Returns
     -------
-    resp: request
+    resp: dict
 
     Examples
     --------
     >>> params = {'q': 'Ribeirão Preto', 'appid': 'API KEY'}
-    >>> req("forecast", params=params, timeout=15)
+    >>> resp = req("forecast", params=params, timeout=15)
 
     """
     if len(api_method) == 0:
         raise ValueError("required api method name")
-    if timeout <= 0:
-        raise ValueError("timeout needs to be positive")
-    if bool(params) is False:
-        raise ValueError("empty params")
 
     headers = {
         "User-Agent": USERAGENT,
@@ -116,10 +129,8 @@ def req(api_method, params, timeout=10):
 
     conn = http.client.HTTPSConnection(HOST, timeout=timeout)
     conn.request("GET", path, None, headers)
-    resp = conn.getresponse()
-    # handler error
-    handler_err(resp)
-
+    data = handler_err(conn.getresponse())
+    resp = json.loads(data)
 
     return resp
 
@@ -142,49 +153,45 @@ def ut2weekday(unixtimestamp):
     raise ValueError("invalid unixtimestamp: %d" % (unixtimestamp))
 
 
-def forecast(api_key, city_name):
+def umbrella(args):
     """
-    Forecast.
+    Checking if take an umbrella.
 
     Parameters
     ----------
-    city_name : str
-        The city name
-    timeout : str
-        The api key
+    params: dict
+        The request timeout
 
     Returns
     -------
-    resp: request
+    msg: str
 
     Examples
     --------
-    >>> forecast("Ribeirão Preto", timeout=15)
+    >>> _args = {'city': 'Ribeirão Preto', 'appid': 'API KEY'}
+    >>> umbrella(_args)
+    You should take an umbrella in these days: Tuesday and Wednesday.
     """
-    params = {
-        "q": city_name,
-        "appid": api_key,
-    }
-
-    log.info("Forecast: %s" % city_name)
-    return req("forecast", params)
-
-
-def umbrella(args):
     days = []
+    method = "forecast"
     msg_tpl = "You should take an umbrella in these days: %s"
-    fore = forecast(args.api_key, args.city)
-    if args.limit <= 0:
-        raise ValueError("limit greathe")
+    # Api parameters
+    params = {
+        "q": args.city,
+        "appid": args.api_key,
+    }
+    log.info("Forecast: %s" % args.city)
+    resp = req(method, params, args.timeout)
 
-    for fcast in json.loads(fore.read())['list']:
+    for fcast in resp['list']:
+        # convert unix time stamp to weekname day
         day = ut2weekday(fcast['dt'])
         if 'main' in fcast.keys():
             hum = fcast['main']['humidity']
             if hum > args.limit and day not in days:
                 days.append(day)
         else:
-            print("Not found key: `main` in %s" % str(fcast))
+            ValueError("Not found key: `main` in %s" % str(fcast))
 
     # has forecast
     weekdays = ""
@@ -229,6 +236,9 @@ parser.add_argument('city', help='city name eg: "Ribeirão Preto"',
 parser.add_argument('-l', '--limit', type=val_fpos,
                     help='limit humidity eg: 70',
                     default=70.0)
+parser.add_argument('-t', '--timeout', type=val_fpos,
+                    help='connection timeout default: 10',
+                    default=10.0)
 parser.add_argument("-v", "--verbose", dest="verbose_count",
                     action="count", default=0,
                     help="increases log verbosity for each occurence.")
