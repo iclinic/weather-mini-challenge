@@ -15,15 +15,13 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 """
-This module contains a set of functions for http request operations
-and methods.
+This module contains functions to solve the challenge proposed by iClinic.
 """
 import argparse
 import datetime
 import http.client
 import json
 import logging
-import os
 import sys
 import urllib.parse
 
@@ -35,8 +33,7 @@ USERAGENT = "iclinic"
 CONTTYPE = "application/json"
 # Host
 HOST = "api.openweathermap.org"
-# ApiKey and possible erros
-APIKEY = os.environ.get("APIKEY", None)
+# Api possible erros
 APIERROS = [401, 404, 429]
 # Template message
 MSG_TPL = "You should take an umbrella in these days: %s."
@@ -148,7 +145,7 @@ def req(service, params, timeout=10):
         The name of the service provided by the API
     params: dict
         The params of api
-    timeout : float, optional
+    timeout: float, optional
         The request timeout
 
     Returns
@@ -164,7 +161,7 @@ def req(service, params, timeout=10):
     if len(service) == 0:
         raise ValueError("required api method name")
     if bool(params) is False:
-            raise ValueError("empty params")
+        raise ValueError("empty params")
     headers = {
         "User-Agent": USERAGENT,
         "Accept": CONTTYPE
@@ -214,12 +211,7 @@ def umbrella(args):
 
     Parameters
     ----------
-    params: dict
-        The request timeout
-
-    Returns
-    -------
-    msg: str
+    args: dict
 
     Examples
     --------
@@ -243,7 +235,7 @@ def umbrella(args):
     try:
         resp = req(service, params, args.timeout)
     except ValueError as e:
-        logger.error(e)
+        log.error(e)
         return
 
     if 'list' not in resp.keys():
