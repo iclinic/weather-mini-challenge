@@ -1,8 +1,6 @@
 [![Travis (.org) branch](https://img.shields.io/travis/murilobsd/weather-mini-challenge/master?style=for-the-badge)](https://travis-ci.com/github/murilobsd/weather-mini-challenge)
-
-[![Codecov](https://img.shields.io/codecov/c/github/murilobsd/weather-mini-challenge?style=flat-square)](https://codecov.io/gh/murilobsd/weather-mini-challenge)
-
-[![Read the Docs](https://img.shields.io/readthedocs/iclinic-weather?label=DOCS&style=flat-square)](http://iclinic-weather.rtfd.io/)
+[![Codecov](https://img.shields.io/codecov/c/github/murilobsd/weather-mini-challenge?style=for-the-badge)](https://codecov.io/gh/murilobsd/weather-mini-challenge)
+[![Read the Docs](https://img.shields.io/readthedocs/iclinic-weather?label=DOCS&style=for-the-badge)](http://iclinic-weather.rtfd.io/)
 
 # Weather Mini Challenge
 Suppose you live in Ribeirão Preto. Should you take an umbrella?
@@ -38,7 +36,7 @@ There are two ways for you to enjoy the umbrella challenge:
 In that case you can use the -h option to return help on how to use the script.
 
 ```sh
-$ ./iclinic_wea.py --help
+$ iclinic_wea.py --help
 usage: iclinic_wea.py [-h] [-l LIMIT] [-t TIMEOUT] [-v] api_key city
 
 IClini Weather Challenge.
@@ -61,22 +59,21 @@ the city of ribeirão preto.
 
 ```sh
 $ export APIKEY=.....
-$ ./iclinic_wea.py --limit 70 "$APIKEY" "Ribeirão Preto"
+$ iclinic_wea.py --limit 70 "$APIKEY" "Ribeirão Preto"
 ```
 
->>> Note that the limit can be changed.
+> Note the **limit** argument has a default value of 70, but it can be changed.
 
 ```sh
 $ export APIKEY=.....
-$ ./iclinic_wea.py --limit 41.1 "$APIKEY" "Ribeirão Preto"
-You should take an umbrella in these days: Monday, Tuesday, Wednesday,
-Thursday and Friday.
+$ iclinic_wea.py --limit 41.1 "$APIKEY" "Ribeirão Preto"
+You should take an umbrella in these days: Monday, Tuesday, Wednesday, Thursday and Friday.
 ```
 If you want to view in a more verbose way, increase -v.
 
 ```sh
 $ export APIKEY=.....
-$ ./iclinic_wea.py --limit 41.1 "$APIKEY" "Ribeirão Preto"
+$ iclinic_wea.py --limit 41.1 "$APIKEY" "Ribeirão Preto"
 iclinic-weather (INFO): Forecast: [Ribeirão Preto]
 iclinic-weather (INFO): you won't need an umbrella
 ```
@@ -90,6 +87,8 @@ _args = {'city': 'Ribeirão Preto', 'appid': 'API KEY', 'limit': 70, 'timeout': 
 umbrella(_args)
 You should take an umbrella in these days: Tuesday and Wednesday.
 ```
+
+## Docs
 
 ## Tests
 
