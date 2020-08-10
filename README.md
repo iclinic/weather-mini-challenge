@@ -89,7 +89,7 @@ You should take an umbrella in these days: Tuesday and Wednesday.
 ```
 
 ## Docs
-
+> Required [Sphinx](https://www.sphinx-doc.org/)
 ```
 $ cd docs/
 $ make html
