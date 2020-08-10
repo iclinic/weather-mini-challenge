@@ -1,4 +1,4 @@
-[![Travis (.org) branch](![Travis (.org) branch](https://img.shields.io/travis/murilobsd/weather-mini-challenge/master?style=for-the-badge))](https://travis-ci.com/github/murilobsd/weather-mini-challenge)
+[![Travis (.org) branch](https://img.shields.io/travis/murilobsd/weather-mini-challenge/master?style=for-the-badge)](https://travis-ci.com/github/murilobsd/weather-mini-challenge)
 [![Codecov](https://img.shields.io/codecov/c/github/murilobsd/weather-mini-challenge?style=for-the-badge)](https://codecov.io/gh/murilobsd/weather-mini-challenge)
 [![Read the Docs](https://img.shields.io/readthedocs/iclinic-weather?label=DOCS&style=for-the-badge)](http://iclinic-weather.rtfd.io/)
 
