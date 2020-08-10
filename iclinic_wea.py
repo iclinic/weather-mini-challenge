@@ -113,12 +113,10 @@ def handler_err(resp):
     value: byte
 
     """
-    if not isinstance(resp, http.client.HTTPResponse):
-        raise ValueError("response is not instance of HTTPResponse")
 
     data = resp.read()
 
-    if resp.status > 300 and resp.status in APIERROS:
+    if resp.status > 300 or resp.status in APIERROS:
         try:
             resp_json = json.loads(data)
             if 'message' in resp_json.keys():
