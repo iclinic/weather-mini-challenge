@@ -39,9 +39,12 @@ HOST = "api.openweathermap.org"
 APIKEY = os.environ.get("APIKEY", None)
 APIERROS = [401, 404, 429]
 # Template message
-MSG_TPL = "You should take an umbrella in these days: %s"
+MSG_TPL = "You should take an umbrella in these days: %s."
+# Limit days
+LIMIT_DAYS = 5
 
 log = logging.getLogger("iclinic-weather")
+
 
 def val_fpos(value):
     """
@@ -54,6 +57,7 @@ def val_fpos(value):
         raise argparse.ArgumentTypeError(msg % value)
 
     return nval
+
 
 def val_empty(value):
     """
@@ -84,21 +88,21 @@ def handler_err(resp):
             raise ValueError(msg)
         except json.JSONDecodeError:
             log.exception("status code: %d msg: %s" %
-                         (resp.status, data))
+                          (resp.status, data))
             raise ValueError("status code: %d msg: %s" %
-                            (resp.status, data))
+                             (resp.status, data))
     log.debug("code: [%d] - resp: %s", resp.status, data)
     return data
 
 
-def req(api_method, params, timeout=10):
+def req(service, params, timeout=10):
     """
     Request function.
 
     Parameters
     ----------
-    api_method : str
-        The city name
+    service: str
+        The name of the service provided by the API
     params: dict
         The params of api
     timeout : float, optional
@@ -114,25 +118,29 @@ def req(api_method, params, timeout=10):
     >>> resp = req("forecast", params=params, timeout=15)
 
     """
-    if len(api_method) == 0:
+    resp = {}
+    if len(service) == 0:
         raise ValueError("required api method name")
 
     headers = {
         "User-Agent": USERAGENT,
         "Accept": CONTTYPE
     }
-    base_path = "/data/{ver}/{met}?"
+
     # Eg path: /data/2.5/forecast?q=...
+    base_path = "/data/{ver}/{service}?"
     path = "{}{}".format(
-        base_path.format(ver=APIVERSI, met=api_method),
+        base_path.format(ver=APIVERSI, service=service),
         urllib.parse.urlencode(params)
     )
-    log.debug("Request GET /%s" % api_method)
 
+    log.debug("Request GET /%s" % service)
     conn = http.client.HTTPSConnection(HOST, timeout=timeout)
     conn.request("GET", path, None, headers)
+
     # checking possible errors
     data = handler_err(conn.getresponse())
+
     # parse resposne
     resp = json.loads(data)
 
@@ -178,44 +186,68 @@ def umbrella(args):
     You should take an umbrella in these days: Tuesday and Wednesday.
     """
     days = []
-    method = "forecast"
-    # Api parameters
+    resp = {}
+    weekdays = ""  # Monday, ...
+    # restfull service
+    service = "forecast"
+    # url parameters
     params = {
         "q": args.city,
         "appid": args.api_key,
     }
-    log.info("Forecast: %s" % args.city)
-    resp = req(method, params, args.timeout)
+
+    log.info("Forecast: [%s]" % args.city)
+    try:
+        resp = req(service, params, args.timeout)
+    except ValueError as e:
+        logger.error(e)
+        return
+
+    if 'list' not in resp.keys():
+        log.warning("Not found key: `list` in %s" % str(resp))
+        return
 
     for fcast in resp['list']:
         # convert unix time stamp to weekname day
-        day = ut2weekday(fcast['dt'])
-        if 'main' in fcast.keys():
-            hum = fcast['main']['humidity']
-            if hum > args.limit and day not in days:
-                days.append(day)
-        else:
-            ValueError("Not found key: `main` in %s" % str(fcast))
-
-    # has forecast
-    weekdays = ""
-    len_days = len(days)
-    if len_days > 0:
-        for num, day in enumerate(days):
-            if (num == len_days - 1):
-                weekdays += "and "
-                weekdays += day
+        try:
+            day = ut2weekday(fcast['dt'])
+            if 'main' in fcast.keys():
+                hum = fcast['main']['humidity']
+                if hum > args.limit and day not in days:
+                    days.append(day)
             else:
-                weekdays += day
-                weekdays += ", "
-        weekdays += "."
-        print(MSG_TPL % weekdays)
+                log.warning("Not found key: `main` in %s" % str(fcast))
+        except ValueError as e:
+            log.error(e)
+
+    # has forecast ?
+    len_days = len(days)
+    if len_days > LIMIT_DAYS:
+        log.info("The forecast exceeded [%d] the limit (%d) of days",
+                 len_days, LIMIT_DAYS)
+        days = days[:LIMIT_DAYS]
+        # update len
+        len_days = len(days)
     else:
         log.info("you won't need an umbrella")
+        return
+    if len_days == 1:
+        print(MSG_TPL % days[0])
+    else:
+        for num, day in enumerate(days):
+            weekdays += day
+            if (num == (len_days - 2)):
+                weekdays += " and "
+                weekdays += days[num+1]
+                break
+            weekdays += ", "
+        print(MSG_TPL % weekdays)
 
 
 def main():
-    """."""
+    """
+    Main function.
+    """
     logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
                         format='%(name)s (%(levelname)s): %(message)s')
 
