@@ -73,7 +73,7 @@ If you want to view in a more verbose way, increase -v.
 
 ```sh
 $ export APIKEY=.....
-$ iclinic_wea.py --limit 41.1 "$APIKEY" "Ribeirão Preto"
+$ iclinic_wea.py --limit 41.1 "$APIKEY" "Ribeirão Preto" -v
 iclinic-weather (INFO): Forecast: [Ribeirão Preto]
 iclinic-weather (INFO): you won't need an umbrella
 ```
