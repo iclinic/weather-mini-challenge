@@ -11,3 +11,5 @@ Your goal is to fetch the Ribeirão Preto air humidity forecast for the next **f
 For instance, if on the next five days air humidity will be greater than 70% on Monday, Tuesday and Wednesday, you must display the message:
 
 *You should take an umbrella in these days: Monday, Tuesday and Wednesday.*
+
+**Fork this repo and send a link to the fork with your solution, please do not open pull requests.** 
