@@ -12,4 +12,6 @@ For instance, if on the next five days air humidity will be greater than 70% on 
 
 *You should take an umbrella in these days: Monday, Tuesday and Wednesday.*
 
+Tip: write clear, concise code, and, most important, do not overcomplicate your solution.
+
 **Fork this repo and send a link to the fork with your solution, please do not open pull requests.** 
